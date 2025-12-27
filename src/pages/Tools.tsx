@@ -4,7 +4,8 @@ import { Link, useParams } from "react-router-dom";
 import { platformApps } from "../data/platformApps";
 import type { Tier } from "../data/tiers";
 import { tierLabel } from "../data/tiers";
-import ToolEngine from "../components/toolEngine";
+import ToolEngine from "../components/ToolEngine";
+
 
 export default function Tools({ tier }: { tier: Tier }) {
   const { toolId } = useParams();
