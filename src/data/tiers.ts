@@ -8,15 +8,6 @@ export type Tier =
   | "BASIC"
   | "PUBLIC_ONEOFF";
 
-export const tierOrder: Tier[] = [
-  "FOUNDER",
-  "EXECUTIVE",
-  "PREMIUM",
-  "STANDARD",
-  "BASIC",
-  "PUBLIC_ONEOFF",
-];
-
 export const tierLabel: Record<Tier, string> = {
   FOUNDER: "Founder (Full)",
   EXECUTIVE: "Executive",
@@ -26,15 +17,15 @@ export const tierLabel: Record<Tier, string> = {
   PUBLIC_ONEOFF: "Public One-Off",
 };
 
-const KEY = "BL_NEC_MASTER_FDR_TIER";
+export const tierRank: Record<Tier, number> = {
+  PUBLIC_ONEOFF: 0,
+  BASIC: 1,
+  STANDARD: 2,
+  PREMIUM: 3,
+  EXECUTIVE: 4,
+  FOUNDER: 5,
+};
 
-export function loadTier(): Tier {
-  const v = localStorage.getItem(KEY);
-  if (!v) return "FOUNDER";
-  if (tierOrder.includes(v as Tier)) return v as Tier;
-  return "FOUNDER";
-}
-
-export function saveTier(t: Tier) {
-  localStorage.setItem(KEY, t);
+export function isTierAtLeast(current: Tier, required: Tier): boolean {
+  return tierRank[current] >= tierRank[required];
 }
