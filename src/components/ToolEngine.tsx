@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useState } from "react";
 
 type Field =
   | { key: string; label: string; type: "text"; placeholder?: string }
@@ -50,78 +51,64 @@ type ToolEngineProps = {
   }}
 />
 
-export default function ToolEngine({ title, description, fields, onGenerate }: ToolEngineProps) {
-  const initial = useMemo(() => {
-    const obj: Record<string, string> = {};
-    fields.forEach((f) => (obj[f.key] = ""));
-    return obj;
-  }, [fields]);
+export type Field = {
+  key: string;
+  label: string;
+  type: "text" | "textarea" | "number";
+  placeholder?: string;
+};
 
-  const [values, setValues] = useState<Record<string, string>>(initial);
+export type ToolEngineProps = {
+  title: string;
+  description?: string;
+  fields: Field[];
+  onGenerate: (values: Record<string, string>) => string;
+};
+
+export default function ToolEngine({ title, description, fields, onGenerate }: ToolEngineProps) {
+  const [values, setValues] = useState<Record<string, string>>({});
   const [output, setOutput] = useState<string>("");
 
-  function setField(key: string, val: string) {
-    setValues((v) => ({ ...v, [key]: val }));
-  }
-
-  function handleGenerate() {
-    const out = onGenerate(values);
-    setOutput(out);
-  }
-
-  function handleCopy() {
-    if (!output) return;
-    navigator.clipboard.writeText(output);
-    alert("Copied output to clipboard.");
-  }
-
   return (
-    <div style={{ display: "grid", gap: 16 }}>
-      <div>
-        <h2 style={{ margin: 0 }}>{title}</h2>
-        {description ? <p style={{ marginTop: 6, opacity: 0.8 }}>{description}</p> : null}
-      </div>
+    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 18px" }}>
+      <h1 style={{ margin: 0 }}>{title}</h1>
+      {description && <p style={{ opacity: 0.75 }}>{description}</p>}
 
-      <div style={{ display: "grid", gap: 12, maxWidth: 900 }}>
+      <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
         {fields.map((f) => (
           <label key={f.key} style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontWeight: 600 }}>{f.label}</span>
+            <div style={{ fontWeight: 600 }}>{f.label}</div>
 
             {f.type === "textarea" ? (
               <textarea
-                value={values[f.key] || ""}
-                placeholder={f.placeholder || ""}
-                onChange={(e) => setField(f.key, e.target.value)}
                 rows={5}
-                style={{ padding: 10, borderRadius: 10, border: "1px solid #d0d0d0" }}
+                value={values[f.key] ?? ""}
+                placeholder={f.placeholder ?? ""}
+                onChange={(e) => setValues((p) => ({ ...p, [f.key]: e.target.value }))}
               />
             ) : (
               <input
-                value={values[f.key] || ""}
-                placeholder={f.placeholder || ""}
-                onChange={(e) => setField(f.key, e.target.value)}
                 type={f.type === "number" ? "number" : "text"}
-                style={{ padding: 10, borderRadius: 10, border: "1px solid #d0d0d0" }}
+                value={values[f.key] ?? ""}
+                placeholder={f.placeholder ?? ""}
+                onChange={(e) => setValues((p) => ({ ...p, [f.key]: e.target.value }))}
               />
             )}
           </label>
         ))}
-      </div>
 
-      <div style={{ display: "flex", gap: 10 }}>
-        <button onClick={handleGenerate} style={{ padding: "10px 14px", borderRadius: 999 }}>
+        <button
+          onClick={() => setOutput(onGenerate(values))}
+          style={{ width: "fit-content", padding: "10px 14px", borderRadius: 10 }}
+        >
           Generate
         </button>
-        <button onClick={handleCopy} style={{ padding: "10px 14px", borderRadius: 999 }}>
-          Copy Output
-        </button>
-      </div>
 
-      <div style={{ border: "1px solid #e3e3e3", borderRadius: 14, padding: 14, minHeight: 180 }}>
-        {output ? (
-          <pre style={{ whiteSpace: "pre-wrap", margin: 0 }}>{output}</pre>
-        ) : (
-          <div style={{ opacity: 0.7 }}>Output will appear here.</div>
+        {output && (
+          <div style={{ marginTop: 12 }}>
+            <h3 style={{ marginBottom: 8 }}>Output</h3>
+            <pre style={{ whiteSpace: "pre-wrap" }}>{output}</pre>
+          </div>
         )}
       </div>
     </div>
