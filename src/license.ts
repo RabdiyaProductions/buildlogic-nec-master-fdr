@@ -1,4 +1,3 @@
-// src/license.ts
 import type { Tier } from "./data/tiers";
 
 const STORAGE_KEY = "bl_license_key_v1";
@@ -15,34 +14,48 @@ export function clearStoredLicenseKey() {
   localStorage.removeItem(STORAGE_KEY);
 }
 
+// Order of access (lowest -> highest)
+const ORDER: Record<Tier, number> = {
+  PUBLIC_ONEOFF: 0,
+  BASIC: 1,
+  STANDARD: 2,
+  PREMIUM: 3,
+  EXECUTIVE: 4,
+  FOUNDER: 5,
+};
+
+export function tierGte(a: Tier, b: Tier) {
+  return ORDER[a] >= ORDER[b];
+}
+
 /**
- * Option A (zero-backend) approach:
- * Treat license keys as "tier-prefixed" strings.
+ * Option A (zero backend) license key rule:
+ * Prefix decides tier.
  * Examples:
- *  - EXECUTIVE-ABC123
- *  - PREMIUM-XYZ999
- *  - BASIC-TEST
+ *  BASIC-XXXX => BASIC
+ *  STANDARD-XXXX => STANDARD
+ *  PREMIUM-XXXX => PREMIUM
+ *  EXECUTIVE-XXXX => EXECUTIVE
+ *  FOUNDER-XXXX => FOUNDER
+ *  PUBLIC-XXXX or ONEOFF-XXXX => PUBLIC_ONEOFF
  */
-export function tierFromLicenseKey(key: string): Tier | null {
-  const k = (key || "").trim().toUpperCase();
+export function parseTierFromKey(key: string): Tier | null {
+  const k = key.trim().toUpperCase();
   if (!k) return null;
 
-  const prefixes: Tier[] = [
-    "FOUNDER",
-    "EXECUTIVE",
-    "PREMIUM",
-    "STANDARD",
-    "BASIC",
-    "PUBLIC_ONEOFF",
-  ];
+  const prefix = k.split("-")[0];
 
-  for (const p of prefixes) {
-    if (k.startsWith(p + "-") || k === p) return p;
-  }
+  if (prefix === "PUBLIC" || prefix === "ONEOFF" || prefix === "PUBLIC_ONEOFF") return "PUBLIC_ONEOFF";
+  if (prefix === "BASIC") return "BASIC";
+  if (prefix === "STANDARD") return "STANDARD";
+  if (prefix === "PREMIUM") return "PREMIUM";
+  if (prefix === "EXECUTIVE") return "EXECUTIVE";
+  if (prefix === "FOUNDER") return "FOUNDER";
+
   return null;
 }
 
-export function getTierFromStoredKey(fallback: Tier = "PUBLIC_ONEOFF"): Tier {
-  const key = getStoredLicenseKey();
-  return tierFromLicenseKey(key) ?? fallback;
+export function getStoredLicenseTier(): Tier | null {
+  const k = getStoredLicenseKey();
+  return parseTierFromKey(k);
 }
