@@ -1,28 +1,24 @@
 // src/data/platformApps.ts
 import type { Tier } from "./tiers";
 
-export type AppKind = "HUB" | "TOOL" | "SUITE";
-
 export type PlatformApp = {
   id: string;
-  kind: AppKind;
+  kind: "HUB" | "TOOL";
   title: string;
   description: string;
-
-  // internal route inside this Founder Master app
   route: string;
 
-  // tier gating: which tiers can see this card + open it
+  /** tiers that can SEE this card in the Hub list */
   tiers: Tier[];
 
-  // optional: link to the public app (for reference only)
-  publicUrl?: string;
+  /** minimum tier required to OPEN/USE the tool */
+  requiredTier?: Tier;
 
-  // optional: name of public equivalent (shown as a note)
+  /** optional public info */
   publicEquivalent?: string;
+  publicUrl?: string;
 };
 
-// Helper: all tiers convenience (use sparingly)
 const ALL: Tier[] = [
   "FOUNDER",
   "EXECUTIVE",
@@ -32,7 +28,6 @@ const ALL: Tier[] = [
   "PUBLIC_ONEOFF",
 ];
 
-// ✅ ADD YOUR NEC LIST HERE (you said ignore Stripe URLs for now)
 export const platformApps: PlatformApp[] = [
   {
     id: "nec-hub-mirror",
@@ -43,6 +38,8 @@ export const platformApps: PlatformApp[] = [
     tiers: ALL,
     publicEquivalent: "BuildLogic NEC Hub (Public)",
     publicUrl: "https://rabdiyaproductions.github.io/nec-hub-pwa/#/buildlogic-nec",
+    // hub should always open for all tiers in this repo
+    requiredTier: "PUBLIC_ONEOFF",
   },
   {
     id: "nec-contract-scope-review",
@@ -52,19 +49,8 @@ export const platformApps: PlatformApp[] = [
     route: "/tool/nec-contract-scope-review",
     tiers: ALL,
     publicEquivalent: "NEC Contract + Scope Review (Public)",
-    // leave empty if you don't want it yet
+    publicUrl: "",
+    // you can tighten this later; keep open while building
+    requiredTier: "PUBLIC_ONEOFF",
   },
-
-  // ─────────────────────────────────────────────
-  // TEMPLATE: copy/paste for each new NEC tool/suite
-  // {
-  //   id: "your-id-here",
-  //   kind: "TOOL",
-  //   title: "Tool Name",
-  //   description: "Short one-liner",
-  //   route: "/tool/your-id-here",
-  //   tiers: ["FOUNDER","EXECUTIVE","PREMIUM","STANDARD","BASIC","PUBLIC_ONEOFF"],
-  //   publicEquivalent: "Public Tool Name",
-  //   publicUrl: "https://....",
-  // },
 ];
